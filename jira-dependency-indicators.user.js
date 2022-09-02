@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
-// @version      1.0.2
+// @version      1.0.4
 // @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @description  try to take over the world!
@@ -148,15 +148,23 @@ window.addEventListener('changestate', async () => {
         }
     }
 
-    function createCornerSvg(color) {
+    function createCornerSvg(color, title) {
         var svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
-        svg.innerHTML = `<polygon points="0,0 0,16 16,0"></polygon>`
+        svg.setAttribute("width", "16")
+        svg.setAttribute("height", "16")
+        if(projectType === 'company') {
+            svg.setAttribute("data-tooltip", title)
+        }
+        svg.innerHTML = '<polygon points="0,0 0,16 16,0"></polygon>'
+        if(projectType === 'team') {
+             svg.innerHTML += `<title>${title}</title>`
+        }
         svg.style.cssText = `
             fill: ${color};
             position: absolute;
             top: 0;
             left: 0;
-            borderRadius: 2px;
+            border-radius: 2px;
         `
         return svg
     }
@@ -183,15 +191,11 @@ window.addEventListener('changestate', async () => {
             card.element.issue = issueData // flag element
 
             if(issueData.internalBlockingIssues.length > 0){
-                const cornerSvg = createCornerSvg('#ffab00')
-                cornerSvg.setAttribute('title', 'Issue has internal dependencies') // TODO
-                card.element.appendChild(cornerSvg)
+                card.element.appendChild(createCornerSvg('#ffab00', 'Issue has internal dependencies'))
             }
 
             if(issueData.externalBlockingIssues.length > 0){
-                const cornerSvg = createCornerSvg('#ff5631')
-                cornerSvg.setAttribute('title', 'Issue has external dependencies') // TODO
-                card.element.appendChild(cornerSvg)
+                card.element.appendChild(createCornerSvg('#ff5631', 'Issue has external dependencies'))
             }
         })
     }
