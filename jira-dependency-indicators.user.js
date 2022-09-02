@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
-// @version      1.0.1
+// @version      1.0.2
 // @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @description  try to take over the world!
@@ -112,7 +112,10 @@ window.addEventListener('changestate', async () => {
     }
 
     function isUnresolvedBlocker(link) {
-        return link.type.name === 'Blocks' && link.type.relation === 'is blocked by'
+        return (
+            (link.type.name === 'Blocks' && link.type.relation === 'is blocked by') ||
+            (link.type.name === 'Dependencies' && link.type.relation === 'requires')
+        )
         && link.issue.fields.status.statusCategory.name !== 'Done'
     }
 
