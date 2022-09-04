@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
-// @version      1.0.5
+// @version      1.0.6
 // @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @description  try to take over the world!
@@ -175,7 +175,7 @@ window.addEventListener('changestate', async () => {
             position: absolute;
             top: 0;
             left: 0;
-            border-radius: 2px;
+            border-top-left-radius: 2px;
         `
         return svg
     }
