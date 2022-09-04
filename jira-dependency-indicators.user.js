@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
-// @version      1.0.4
+// @version      1.0.5
 // @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @description  try to take over the world!
@@ -76,26 +76,37 @@ window.addEventListener('changestate', async () => {
 
         console.info(`fetch issues ${newKeys.join(', ')}`);
 
-        // TODO handle pagination
-        const issues = await fetch(`${window.location.origin}/rest/api/3/search/?jql=${encodeURIComponent(`key in (${newKeys.join(',')})`)}&fields=issuelinks`)
-        .then(res => res.json()).then(data => data.issues)
+        const newIssues = []
+        const issueRequestChunkSize = 100;
+        for (let startAt = 0; startAt < newKeys.length; startAt += issueRequestChunkSize) {
+            const keysChunk = newKeys.slice(startAt, startAt + issueRequestChunkSize);
+            const newIssuesChunk = await fetch(`${window.location.origin}/rest/api/3/search/`
+                                        + `?jql=${encodeURIComponent(`key in (${keysChunk.join(',')})`)}`
+                                        + `&fields=issuelinks`
+                                        + `&maxResults=${issueRequestChunkSize}`)
+             .then(res => res.json())
+             .then(data => data.issues)
 
-        issues.forEach(issue => {
-            const issuelinks = issue.fields.issuelinks.map(normalizeIssueLink)
+             newIssuesChunk.forEach(issue => {
+                 const issuelinks = issue.fields.issuelinks.map(normalizeIssueLink)
 
-            const internalIssueLinks = issuelinks.filter(link => getProjectKey(link.issue.key) === projectKey)
-            issue.internalBlockingIssues = internalIssueLinks.filter(isUnresolvedBlocker).map(link => link.issue)
-            if(issue.internalBlockingIssues.length > 0) console.info(issue.key + ' has internal dependencies')
+                 const internalIssueLinks = issuelinks.filter(link => getProjectKey(link.issue.key) === projectKey)
+                 issue.internalBlockingIssues = internalIssueLinks.filter(isUnresolvedBlocker).map(link => link.issue)
+                 if(issue.internalBlockingIssues.length > 0) console.info(issue.key + ' has internal dependencies')
 
-            const externalIssueLinks = issuelinks.filter(link => getProjectKey(link.issue.key) !== projectKey)
-            issue.externalBlockingIssues = externalIssueLinks.filter(isUnresolvedBlocker).map(link => link.issue)
-            if(issue.externalBlockingIssues.length > 0) console.info(issue.key + ' has external dependencies')
-        })
+                 const externalIssueLinks = issuelinks.filter(link => getProjectKey(link.issue.key) !== projectKey)
+                 issue.externalBlockingIssues = externalIssueLinks.filter(isUnresolvedBlocker).map(link => link.issue)
+                 if(issue.externalBlockingIssues.length > 0) console.info(issue.key + ' has external dependencies')
+             })
 
-        issues.forEach(issue => {
+             newIssues.push(...newIssuesChunk)
+        }
+
+        newIssues.forEach(issue => {
             issueDataCache[issue.key] = issue
             result.push(issue)
         })
+
         return result
     }
 
