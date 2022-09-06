@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
-// @version      1.0.6
+// @version      1.0.7
 // @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @description  try to take over the world!
@@ -68,13 +68,17 @@ window.addEventListener('changestate', async () => {
         const newKeys = []
         keys.forEach(key => {
             const issueData = issueDataCache[key]
-            if(issueData) result.push(issueData)
-            else newKeys.push(key)
+            if(issueData) {
+                result.push(issueData)
+            } else {
+                let promiseResolve = null
+                issueDataCache[key] = new Promise((resolve, reject) => { promiseResolve = resolve })
+                issueDataCache[key].resolve = promiseResolve
+                newKeys.push(key)
+            }
         })
 
-        if(newKeys.length === 0) return result
-
-        console.info(`fetch issues ${newKeys.join(', ')}`);
+        if(newKeys.length === 0) return await Promise.all(result)
 
         const newIssues = []
         const issueRequestChunkSize = 100;
@@ -92,22 +96,20 @@ window.addEventListener('changestate', async () => {
 
                  const internalIssueLinks = issuelinks.filter(link => getProjectKey(link.issue.key) === projectKey)
                  issue.internalBlockingIssues = internalIssueLinks.filter(isUnresolvedBlocker).map(link => link.issue)
-                 if(issue.internalBlockingIssues.length > 0) console.info(issue.key + ' has internal dependencies')
 
                  const externalIssueLinks = issuelinks.filter(link => getProjectKey(link.issue.key) !== projectKey)
                  issue.externalBlockingIssues = externalIssueLinks.filter(isUnresolvedBlocker).map(link => link.issue)
-                 if(issue.externalBlockingIssues.length > 0) console.info(issue.key + ' has external dependencies')
              })
 
              newIssues.push(...newIssuesChunk)
         }
 
         newIssues.forEach(issue => {
-            issueDataCache[issue.key] = issue
+            issueDataCache[issue.key].resolve(issue)
             result.push(issue)
         })
 
-        return result
+        return await Promise.all(result)
     }
 
     function normalizeIssueLink(link) {
@@ -175,7 +177,7 @@ window.addEventListener('changestate', async () => {
             position: absolute;
             top: 0;
             left: 0;
-            border-top-left-radius: 2px;
+            border-radius: 2px;
         `
         return svg
     }
@@ -195,20 +197,24 @@ window.addEventListener('changestate', async () => {
 
     async function updateCards() {
         const boardCards = getBoardCards()
-        const newCards = boardCards.filter(card => !card.element.issue)
-        await fetchIssueData(newCards.map(card => card.key))
-        newCards.forEach(card => {
-            const issueData = issueDataCache[card.key]
-            card.element.issue = issueData // flag element
+        await fetchIssueData(boardCards.map(card => card.key))
+        boardCards.filter(card => !card.element.dependenyIndicatorFlag)
+            .forEach(async card => {
+                card.element.dependenyIndicatorFlag = true
+                const issueData = await issueDataCache[card.key]
 
-            if(issueData.internalBlockingIssues.length > 0){
-                card.element.appendChild(createCornerSvg('#ffab00', 'Issue has internal dependencies'))
-            }
+                console.debug("update card element: ", card.key)
 
-            if(issueData.externalBlockingIssues.length > 0){
-                card.element.appendChild(createCornerSvg('#ff5631', 'Issue has external dependencies'))
-            }
-        })
+                if(issueData.internalBlockingIssues.length > 0){
+                    console.debug('  has internal dependencies')
+                    card.element.appendChild(createCornerSvg('#ffab00', 'Issue has internal dependencies'))
+                }
+
+                if(issueData.externalBlockingIssues.length > 0){
+                    console.debug('  has external dependencies')
+                    card.element.appendChild(createCornerSvg('#ff5631', 'Issue has external dependencies'))
+                }
+            })
     }
 
     console.debug('wait for board loaded...')
