@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
-// @version      1.0.9
+// @version      1.0.10
 // @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @description  try to take over the world!
@@ -172,7 +172,7 @@ window.addEventListener('changestate', async () => {
         if(project.type === 'company') {
             svg.setAttribute("data-tooltip", title)
         }
-        svg.innerHTML = '<polygon points="0,0 0,16 16,0"></polygon>'
+        svg.innerHTML = '<polygon points="0,0 16,0 16,16"></polygon>'
         if(project.type === 'team') {
              svg.innerHTML += `<title>${title}</title>`
         }
@@ -180,7 +180,7 @@ window.addEventListener('changestate', async () => {
             fill: ${color};
             position: absolute;
             top: 0;
-            left: 0;
+            right: 0;
             border-radius: 2px;
         `
         return svg
