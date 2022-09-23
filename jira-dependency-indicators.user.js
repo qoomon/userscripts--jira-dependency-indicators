@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
-// @version      1.0.7
+// @version      1.0.9
 // @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @description  try to take over the world!
-// @author       qoomonu
+// @author       qoomon
 // @match        https://*.atlassian.net/jira/core/projects/*/board
 // @match        https://*.atlassian.net/jira/core/projects/*
 // @match        https://*.atlassian.net/jira/software/c/projects/*/boards/*
@@ -117,21 +117,6 @@ window.addEventListener('changestate', async () => {
 
     }
 
-    function detectProject() {
-        const project = {
-          key: document.location.pathname.match(/\/projects\/(?<project>[^/]+)\//).groups.project
-        }
-
-        if(document.location.pathname.startsWith('/jira/core')) {
-            project.type = 'team'
-        }
-        if(document.location.pathname.startsWith('/jira/software')) {
-            project.type = 'company'
-        }
-
-        return project
-    }
-
     function normalizeIssueLink(link) {
         if(link.inwardIssue) {
             link.type.relation = link.type.inward
@@ -158,9 +143,8 @@ window.addEventListener('changestate', async () => {
 
     function getBoardCards() {
         if(project.type === 'team') {
-            const projectKey = document.location.pathname.match(/\/projects\/(?<project>[^/]+)\//).groups.project
             return [...document.querySelectorAll('div[data-rbd-draggable-id^="ISSUE::"]')].map(element => ({
-                key: [...element.querySelectorAll('span')].find(e => e.innerText.startsWith(`${projectKey}-`)).innerText,
+                key: [...element.querySelectorAll('span')].find(e => e.innerText.startsWith(`${project.key}-`)).innerText,
                 element
             }))
         }
@@ -201,8 +185,24 @@ window.addEventListener('changestate', async () => {
         `
         return svg
     }
+})
 
-    async function untilDefined(fn) {
+function detectProject() {
+    const project = {
+        key: document.location.pathname.match(/\/projects\/(?<project>[^/]+)\//).groups.project
+    }
+
+    if(document.location.pathname.startsWith('/jira/core')) {
+        project.type = 'team'
+    }
+    if(document.location.pathname.startsWith('/jira/software')) {
+        project.type = 'company'
+    }
+
+    return project
+}
+
+async function untilDefined(fn) {
         return new Promise(resolve => {
             const interval = setInterval(() => {
                 const result = fn()
@@ -213,7 +213,6 @@ window.addEventListener('changestate', async () => {
             }, 100)
         })
     }
-})
 
 
 // -----------------------------------------------------------------------------
