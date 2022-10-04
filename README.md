@@ -1,6 +1,6 @@
 # userscript-jira-dependency-indicators
 
-This userscript will add dependecy indicator to jira board cards.
+This userscript will add dependecy indicator to jira board and backlog cards.
 
 Colored card corners indicates `is blocked by` links to **unresolved** issues.
 * 🟨 `yellow` corners indecates a project **internal** dependecy
