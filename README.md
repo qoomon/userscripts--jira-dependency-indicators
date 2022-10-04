@@ -2,7 +2,7 @@
 
 This userscript will add dependecy indicator to jira board and backlog cards.
 
-Colored card corners indicates `is blocked by` links to **unresolved** issues.
+Colored card corners indicates `is blocked by` links to `unresolved` issues.
 * 🟨 `yellow` corners indecates a project **internal** dependecy
 * 🟥 `red` &emsp;&nbsp; corners indecates a project **external** dependecy
 
