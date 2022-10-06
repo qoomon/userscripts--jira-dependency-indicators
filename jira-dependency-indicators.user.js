@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
-// @version      1.0.10
+// @version      1.1.1
 // @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @description  try to take over the world!
@@ -10,7 +10,7 @@
 // @match        https://*.atlassian.net/jira/core/projects/*
 // @match        https://*.atlassian.net/jira/software/c/projects/*/boards/*
 // @match        https://*.atlassian.net/jira/software/c/projects/*
-// @icon         https://www.atlassian.com/favicon.ico
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=atlassian.com
 // @grant        none
 // ==/UserScript==
 
@@ -20,6 +20,7 @@ window.addEventListener('changestate', async () => {
     if(![
       document.location.pathname.match(/^\/jira\/core\/projects\/[^/]+\/board$/),
       document.location.pathname.match(/^\/jira\/software\/c\/projects\/[^/]+\/boards\/[^/]+$/),
+      document.location.pathname.match(/^\/jira\/software\/c\/projects\/[^/]+\/boards\/[^/]+\/backlog$/),
     ].some(Boolean)) {
        console.debug('skip', document.location.pathname);
        return
@@ -149,7 +150,7 @@ window.addEventListener('changestate', async () => {
             }))
         }
         if(project.type === 'company') {
-            return [...document.querySelectorAll('.ghx-issue')].map(element => ({
+            return [...document.querySelectorAll('.js-issue')].map(element => ({
                 key: element.getAttribute('data-issue-key'),
                 element
             }))
