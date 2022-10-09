@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
-// @version      1.1.1
+// @version      1.1.2
 // @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
 // @description  try to take over the world!
@@ -13,6 +13,18 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=atlassian.com
 // @grant        none
 // ==/UserScript==
+
+// --- Configure blocking links ------------------------------------
+
+const blockingLinks = {
+    'Blocks' : 'is blocked by',
+    'Dependencies': 'requires',
+};
+
+const blockingColors = {
+    internal: '#ffab00',
+    external: '#ff5631',
+};
 
 window.addEventListener('changestate', async () => {
     'use strict';
@@ -50,12 +62,12 @@ window.addEventListener('changestate', async () => {
 
             if(issue.internalBlockingIssues.length > 0){
                 console.debug('  has internal dependencies')
-                card.element.appendChild(createCornerSvg('#ffab00', 'Issue has internal dependencies'))
+                card.element.appendChild(createCornerSvg(blockingColors.internal, 'Issue has internal dependencies'))
             }
 
             if(issue.externalBlockingIssues.length > 0){
                 console.debug('  has external dependencies')
-                card.element.appendChild(createCornerSvg('#ff5631', 'Issue has external dependencies'))
+                card.element.appendChild(createCornerSvg(blockingColors.external, 'Issue has external dependencies'))
             }
         })
     }
@@ -131,11 +143,8 @@ window.addEventListener('changestate', async () => {
     }
 
     function isUnresolvedBlocker(link) {
-        return (
-            (link.type.name === 'Blocks' && link.type.relation === 'is blocked by') ||
-            (link.type.name === 'Dependencies' && link.type.relation === 'requires')
-        )
-        && link.issue.fields.status.statusCategory.name !== 'Done'
+        return blockingLinks[link.type.name] === link.type.relation
+          && link.issue.fields.status.statusCategory.name !== 'Done'
     }
 
     function getProjectKey(issueKey) {
@@ -186,37 +195,39 @@ window.addEventListener('changestate', async () => {
         `
         return svg
     }
+
+    function detectProject() {
+        const project = {
+            key: document.location.pathname.match(/\/projects\/(?<project>[^/]+)\//).groups.project
+        }
+
+        if(document.location.pathname.startsWith('/jira/core')) {
+            project.type = 'team'
+        }
+        if(document.location.pathname.startsWith('/jira/software')) {
+            project.type = 'company'
+        }
+
+        return project
+    }
 })
 
-function detectProject() {
-    const project = {
-        key: document.location.pathname.match(/\/projects\/(?<project>[^/]+)\//).groups.project
-    }
-
-    if(document.location.pathname.startsWith('/jira/core')) {
-        project.type = 'team'
-    }
-    if(document.location.pathname.startsWith('/jira/software')) {
-        project.type = 'company'
-    }
-
-    return project
-}
+// --- Utils ---------------------------------------------------------------
 
 async function untilDefined(fn) {
-        return new Promise(resolve => {
-            const interval = setInterval(() => {
-                const result = fn()
-                if (result != undefined) {
-                    clearInterval(interval)
-                    resolve(result)
-                }
-            }, 100)
-        })
-    }
+    return new Promise(resolve => {
+        const interval = setInterval(() => {
+            const result = fn()
+            if (result != undefined) {
+                clearInterval(interval)
+                resolve(result)
+            }
+        }, 100)
+   })
+}
 
 
-// -----------------------------------------------------------------------------
+// --- Event Management -----------------------------------------------------
 
 window.history.pushState = new Proxy(window.history.pushState, {
   apply: (target, thisArg, argArray) => {
