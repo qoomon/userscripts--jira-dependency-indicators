@@ -11,4 +11,4 @@ Colored card corners indicates `is blocked by` links to `unresolved` issues.
 
 ## Install
 * [Install Tampermonkey](https://www.tampermonkey.net/) or any other userscript manager
-* [Install userscript](https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/jira-dependency-indicators.user.js)
+* [Install this userscript](https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/jira-dependency-indicators.user.js)
