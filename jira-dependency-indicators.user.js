@@ -22,8 +22,8 @@ const blockingLinks = {
 };
 
 const blockingColors = {
-    internal: '#ffab00',
-    external: '#ff5631',
+    internal: '#ffcc66',
+    external: '#ff6666',
 };
 
 window.addEventListener('changestate', async () => {
@@ -226,7 +226,6 @@ async function untilDefined(fn) {
         }, 100)
    })
 }
-
 
 // --- Event Management -----------------------------------------------------
 
