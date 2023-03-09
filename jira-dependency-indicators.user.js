@@ -2,8 +2,8 @@
 // @name         Jira Card Dependency Indicator
 // @namespace    https://qoomon.github.io
 // @version      1.1.2
-// @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
-// @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/aws-visual-account-indicator.user.js
+// @updateURL    https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/jira-dependency-indicators.user.js
+// @downloadURL  https://github.com/qoomon/userscript-jira-dependency-indicators/raw/main/jira-dependency-indicators.user.js
 // @description  try to take over the world!
 // @author       qoomon
 // @match        https://*.atlassian.net/jira/core/projects/*/board
